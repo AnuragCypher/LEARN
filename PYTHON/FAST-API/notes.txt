@@ -1,0 +1,66 @@
+
+FastAPI is built on top starlett framework which is asynchronous network application which stands between client and server. because of that fastAPI is able to process async requests.
+
+FastAPI is generally paired with uvicorn which is an ASGI (async.. server gateway interface), which can recieve and give response to async web requests.
+
+FastAPI Features : 
+
+    it comes with OpenAPI specifications and validation options for path, query, body request parameters.
+
+    thnks for python data validation library it has now support to various data validation (for request) and settings management. 
+
+    because of inbuilt openAPI support it has http request support in built, with security 
+
+
+Rest :
+
+    REST (Representational State Transfer) is an architectural style for designing networked applications.
+
+    Statelessness: Each request from client to server must contain all the information needed to understand and complete the request. The server does not store any session information about the client.
+
+    Client-Server Architecture: The client and the server operate independently, allowing each to evolve separately.
+    
+    Uniform Interface: A consistent interface simplifies and decouples the architecture, which enables each part to evolve independently.
+    
+    Cacheable: Clients can cache responses to improve performance. Responses must, therefore, explicitly state whether they are cacheable.
+    
+    Layered System: A client cannot ordinarily tell whether it is connected directly to the end server or to an intermediary along the way.
+    
+    Code on Demand (optional): Servers can extend client functionality by transferring executable code (e.g., Java applets or JavaScript).
+
+
+Path, Query, Body : 
+
+    these are classes used for type validation for request types or request method types and as annotations for the parameters used inside these request methods.
+
+    Path is for path parameters, Query for query parameters, Body for request body.
+
+
+Form, File : 
+
+    just like other data type we can use annotate and validate, we can do so for FormData and File type data by making use of Form and File from fastapi itself,
+
+
+
+Pydantic: 
+
+    pydantic is data validation and management library that is used to create data models for type annotations.
+
+    Supports ORM objects by converting them into Pydantic models using the from_orm method, facilitating easy integration with databases.
+
+    Offers mechanisms to define custom validation functions through the use of validators that can be attached to model fields.
+
+    Automatically handles data conversion into the declared types, aiding in the transformation of input data into Python types directly.
+
+    Pydantic models can be easily converted to and from JSON, making it ideal for web development, especially with FastAPI for request and response handling.
+  
+
+MiddleWares:
+
+    middleware is a function that runs before and after each request. It's a way to process the request before it reaches your endpoint and to modify the response before sending it back to the client. Middleware can be used for a variety of tasks, such as logging, authentication, data processing, or managing CORS (Cross-Origin Resource Sharing) settings.
+
+    to implement  middleware inside the fastAPI web app we use , add_middleware from fastapi library.
+
+    see example to see how to add middlewares..
+
+

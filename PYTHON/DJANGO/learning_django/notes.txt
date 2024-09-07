@@ -1,0 +1,325 @@
+model -> 
+    field options ->
+
+        there are various field options that a fiel in model can have but there's a list of some common and most frequently used options are,
+
+            null, blank, default, choices, max_length, unique, db_index, 
+            (see the example from "first_one -> model's")
+
+            
+    BELOW EXECUTION STATEMENTS SHOW HOW TO CONVERT THE QUERYSET OBJECT INTO PYTHON DICTIONARY,
+    involves error too that tells us what will not work
+
+        >>> from first_one import Author, Post
+        Traceback (most recent call last):
+        File "<console>", line 1, in <module>
+        ImportError: cannot import name 'Author' from 'first_one' (/home/fiftyfive/Documents/LEARN/PYTHON/DJANGO/learning_django/first_one/__init__.py)
+        >>> from first_one.models import Author, Post
+        >>> Post.objects.all()
+        <QuerySet [<Post: Post object (1)>]>
+        >>> Post.objects.all()[0]._meta
+        <Options for Post>
+        >>> Post.objects.all()[0]._meta.field
+        Traceback (most recent call last):
+        File "<console>", line 1, in <module>
+        AttributeError: 'Options' object has no attribute 'field'
+        
+        >>> Post.objects.all()[0]._meta.fields
+        (<django.db.models.fields.BigAutoField: id>, <django.db.models.fields.related.ForeignKey: author>, <django.db.models.fields.CharField: title>, <django.db.models.fields.TextField: content>)
+        
+        >>> Post.objects.all()[0]._meta.values
+        Traceback (most recent call last):
+        File "<console>", line 1, in <module>
+        AttributeError: 'Options' object has no attribute 'values'
+        
+        >>> Post.objects.all()[0]._meta.fields
+        (<django.db.models.fields.BigAutoField: id>, <django.db.models.fields.related.ForeignKey: author>, <django.db.models.fields.CharField: title>, <django.db.models.fields.TextField: content>)
+
+        ==> ==> ==> META class is used to modify model on the based of various options it has, for exmaple you can give your desired name of table other than what djago sets by default., similarly applying ordering (sorting the queryset) , applying constraints like unique, setting indexes, used to set permission, defining the abstract class.
+
+
+        >>> {field.name: getattr(Post.objects.all()[0], field.name) for field in Post.objects.all()[0]._meta.fields}
+        {'id': 1, 'author': <Author: Author object (1)>, 'title': 'my first blog', 'content': 'right now nothing'}
+        
+        >>> Post.objects.all()[0]._meta.fields.name
+        Traceback (most recent call last):
+        File "<console>", line 1, in <module>
+        AttributeError: 'ImmutableList' object has no attribute 'name'
+        
+        >>> Post.objects.all()[0]._meta.fields
+        (<django.db.models.fields.BigAutoField: id>, <django.db.models.fields.related.ForeignKey: author>, <django.db.models.fields.CharField: title>, <django.db.models.fields.TextField: content>)
+        
+        >>> Post.objects.all()[0]._meta.fields.name
+        Traceback (most recent call last):
+        File "<console>", line 1, in <module>
+        AttributeError: 'ImmutableList' object has no attribute 'name'
+        
+        >>> [i for i in Post.objects.all()[0]._meta.fields]
+        [<django.db.models.fields.BigAutoField: id>, <django.db.models.fields.related.ForeignKey: author>, <django.db.models.fields.CharField: title>, <django.db.models.fields.TextField: content>]
+        
+        >>> [i.name for i in Post.objects.all()[0]._meta.fields]
+        ['id', 'author', 'title', 'content']
+         
+
+ 
+***** PYTHON NOTE,
+
+        getattr(instance/object, field/key/name_of_property) ==> will give us the value of that property inside that object..
+
+
+
+        ==> to add data to the many to mant field , we use in build "add()" function, 
+
+            object.field_name.add(refrenced_object)
+        
+        ==> another way to add multiple obects to an many to many relation is to use "set" function,
+
+        ==> to clear all many to many  relation we use "clear"..
+
+
+***** A WORD ABOUT META CLASS :
+
+        its a class you define inside an model that contains configuration about your model that field and fields option does not contain.
+
+        for example giving the an different name that will be in use to create table in db whcih is other than your model class name and like this many others.
+
+    
+***** MODEL MANAGER : 
+
+        its a direct interface to your db table or we can say a model, you can set the name of manager from Meta class , if you dont set the name of manager by yourself,
+        the django will by default create a manager for you, with the "object" name.
+
+    
+    ==> in your model class you can define the additional function that adds additional features, you can also override predefined methods that django adds by default to your model class.
+
+    Reusable QuerySets: ==> If you find yourself repeatedly using the same query filters across different views or parts of your application, encapsulating these filters in a custom manager method can DRY out your code.
+
+            Model:
+
+                from django.db import models
+
+                class Post(models.Model):
+                    title = models.CharField(max_length=100)
+                    content = models.TextField()
+                    status = models.CharField(max_length=10, choices=[('draft', 'Draft'), ('published', 'Published')])
+                    tags = models.ManyToManyField('Tag')
+
+                class Tag(models.Model):
+                    name = models.CharField(max_length=30)
+
+            Custom Manager:
+
+                class FeaturedPostsManager(models.Manager):
+                    def get_queryset(self):
+                        return super().get_queryset().filter(status='published').filter(tags__name='featured')
+
+            Usage in Model:
+
+                class Post(models.Model):
+                    # fields...
+
+                    objects = models.Manager()  # Default manager
+                    featured = FeaturedPostsManager()  # Custom manager for featured posts
+
+            Explanation: Here, FeaturedPostsManager provides a reusable queryset for fetching posts that are both published and tagged with "featured". This encapsulation allows any part of your application to easily retrieve featured posts without repeating the filter logic.
+    
+    Complex Queries: ==> For complex queries that involve multiple model fields, joins, or subqueries, encapsulating this logic in a manager method can make your codebase more readable and maintainable.
+    Table-level Operations: When you need to perform operations that conceptually apply to the entire table (or a significant subset of it) rather than individual records.
+
+
+            Scenario: You have a customer database where you need to perform complex queries to identify VIP customers based on multiple criteria, such as the total amount spent and the number of orders.
+
+            Model:
+
+                class Customer(models.Model):
+                    name = models.CharField(max_length=100)
+                    email = models.EmailField()
+                    date_joined = models.DateTimeField(auto_now_add=True)
+
+                class Order(models.Model):
+                    customer = models.ForeignKey(Customer, related_name='orders', on_delete=models.CASCADE)
+                    amount = models.DecimalField(max_digits=10, decimal_places=2)
+                    date = models.DateTimeField(auto_now_add=True)
+
+            Custom Manager:
+
+                class VIPCustomerManager(models.Manager):
+                    def get_queryset(self):
+                        return super().get_queryset().annotate(total_spent=models.Sum('orders__amount'), order_count=models.Count('orders')).filter(total_spent__gt=1000, order_count__gt=10)
+
+            Usage in Model:
+
+                class Customer(models.Model):
+                    # fields...
+
+                    objects = models.Manager()  # Default manager
+                    vips = VIPCustomerManager()  # Custom manager for VIP customers
+
+            Explanation: The VIPCustomerManager is designed to identify VIP customers by annotating each customer with the total amount spent and the number of orders, then filtering those who meet the specified criteria. This manager abstracts away a complex query that combines aggregation and filtering, making it reusable wherever VIP customer data is needed.
+
+
+***** @Property DECORATOR : 
+
+        its a decorator used to make a model fucntion act as an read only attribute value , its best used in case where it need to present the data of some computations or calculated field,
+        it improves readability.
+
+        its an intuitive way of data representation and , see example from net or in models File
+
+
+***** INHERITANCE IN DJANGO MODEL :  
+
+        there are three types of model inheriatnce in django models, abstract inheritance , multitable inheritance, proxy inheritance.
+    
+***** Example of how to use filter,
+
+        >>> from first_one.models import Product
+        >>> p1 = Product(name = 
+        ... "test",description = "nothing",price = 1000) 
+        >>> p2 = Product(name="test-3",description = "nothing",price = 1000)
+        >>> p1.save()
+        >>> p2.save()
+        >>> p3 = Product(name="test-4",description = "nothing",price =2000)
+        >>> p3.save()
+        >>> p4 = Product(name="test-5",description = "nothing",price =2000000)
+        >>> 
+        >>> p4.save()
+        >>> Product.objects.all()
+        <QuerySet [<Product: table>, <Product: test-2>, <Product: test>, <Product: test-3>, <Product: test-4>, <Product: test-5>]>
+        >>> Product.objects.filter(price__gt = 10000)
+        <QuerySet [<Product: test-2>, <Product: test-5>]>
+        >>> Product.objects.filter(price__gt = 10000).__dict__
+        {'model': <class 'first_one.models.Product'>, '_db': None, '_hints': {}, '_query': <django.db.models.sql.query.Query object at 0x7f0545c0f7f0>, '_result_cache': None, '_sticky_filter': False, '_for_write': False, '_prefetch_related_lookups': (), '_prefetch_done': False, '_known_related_objects': {}, '_iterable_class': <class 'django.db.models.query.ModelIterable'>, '_fields': None, '_defer_next_filter': False, '_deferred_filter': None}
+        >>> Product.objects.filter(price__gt = 10000)[0]__dict__
+        File "<console>", line 1
+            Product.objects.filter(price__gt = 10000)[0]__dict__
+                                                        ^^^^^^^^
+        SyntaxError: incomplete input
+        >>> Product.objects.filter(price__gt = 10000)[0].__dict__
+        {'_state': <django.db.models.base.ModelState object at 0x7f0545898f40>, 'id': 2, 'name': 'test-2', 'description': 'a tv', 'price': 40000}
+        >>> Product.objects.filter(price__gt = 10000)[1].__dict__
+        {'_state': <django.db.models.base.ModelState object at 0x7f054589bca0>, 'id': 6, 'name': 'test-5', 'description': 'nothing', 'price': 2000000}
+
+        
+        ==> Querysets are lazy,
+            QuerySets are lazy – the act of creating a QuerySet doesn’t involve any database activity. You can stack filters together all day long, and Django won’t actually run the query until the QuerySet is evaluated. Take a look at this example:
+
+            >>> q = Entry.objects.filter(headline__startswith="What")
+            >>> q = q.filter(pub_date__lte=datetime.date.today())
+            >>> q = q.exclude(body_text__icontains="food")
+            >>> print(q)
+
+            Though this looks like three database hits, in fact it hits the database only once, at the last line (print(q)). In general, the results of a QuerySet aren’t fetched from the database until you “ask” for them. When you do, the QuerySet is evaluated by accessing the database. For more details on exactly when evaluation takes place
+
+
+        ==> to fetch a single object use "get()" function, 
+            here you provide an unique identifier in its arguement and it will retrieve the single object matching the query.
+
+
+        ==> this is how we ca use db's limiting and offset capabalities,
+
+            >>> Product.objects.all()[:2]
+            <QuerySet [<Product: table>, <Product: test-2>]>
+
+
+        ==> querying relational constrained data ,
+
+            >>> Post.objects.filter(author__name="anurag")
+            <QuerySet [<Post: Post object (1)>]>
+
+
+***** F() fucntion, is used when we want to filter the model or table on the bases of comparoison of field values in same model, i supports addition, subtraction, multiplication, division ..
+
+        model.objects.filter(field_1 = F(field2) + F(field_2)) (there can be multiplication, subtraction, division)..
+
+
+
+***** STORING AND QUERYING JSON FIELDS (IMPORTANT), see through code examples..
+
+
+***** Aggregates,
+        => to summarize a quantity by a definite number or value over a queryset and one of the field inside of instance or object from queryset ,
+            below is the code using some common aggregations ,
+            
+            from first_one.models import Prduct
+            Traceback (most recent call last):
+            File "<console>", line 1, in <module>
+            ImportError: cannot import name 'Prduct' from 'first_one.models' (/home/fiftyfive/Documents/LEARN/PYTHON/DJANGO/learning_django/first_one/models.py)
+            >>> from first_one.models import Product
+            >>> from django.db.models import Max
+            >>> from django.db.models import Count, Avg, 
+            File "<console>", line 1
+                from django.db.models import Count, Avg, 
+                                                        ^
+            SyntaxError: incomplete input
+            >>> from django.db.models import Count, Avg 
+            >>> Product.objects.all()
+            <QuerySet [<Product: table>, <Product: test-2>, <Product: test>, <Product: test-3>, <Product: test-4>, <Product: test-5>]>
+            >>> Product.objects.aggregate(Avg(price))
+            Traceback (most recent call last):
+            File "<console>", line 1, in <module>
+            NameError: name 'price' is not defined
+            >>> Product.objects.aggregate(Avg("price"))
+            {'price__avg': 340683.3333333333}
+            >>> Product.objects.aggregate(Count("price"))
+            {'price__count': 6}
+            >>> Product.objects.aggregate(Max("price"))
+            {'price__max': 2000000}
+
+
+***** Update ( django core),
+
+            another important operation in dango core feature of orm, whcih bulk update the the specific field vaiue throught the table.
+
+            >>> from first_one.models import Product
+            >>> Product.objects.update(price=100000)
+            6
+
+            Pros,
+                its an effecient approach to builk update a table with specific values.
+                atomicity is another pros,
+            
+            cons,
+                you wont get signal like pre_save and post_save are sent during bulk update,
+                only a table you are working on with this operation is accessable there is no way to span relations.
+
+
+***** select_related and prefetch_related, these two methods are effecient way by which we can query db for related fields , select_related is used for 
+        ForeignKey related fields and prefetch_related is used for many to many and reverse fk related fields.
+
+            basically these two are caching methdod to optimize the db operation which involved fk related fields.
+
+
+
+***** Naming model Manager from default to something you want,
+
+        seee the first_one >> modeles >> example_changing_manager_name
+
+
+***** defining custom model manager,
+
+        specifically for two reason, first to add more features and functionalities ,
+        and second one is to get filtered queryset.
+
+        see first_one >> models >> person class ..
+
+        and we run operations like this,
+        
+        >>> from first_one.models import Person
+        >>> Person(name = "anurag").save()
+        >>> Person(name = "rajat").save()
+        >>> Person(name = "abbbb").save()
+        >>> Person(name = "bbba").save()
+        >>> Person(name ="aaaa").save()
+        >>> Person.custom.all()
+        <QuerySet [<Person: Person object (1)>, <Person: Person object (2)>, <Person: Person object (3)>, <Person: Person object (4)>, <Person: Person object (5)>]>
+        >>> Person.custom.get_
+        Person.custom.get_filtered_data()  Person.custom.get_or_create(       Person.custom.get_queryset()       
+        >>> Person.custom.get_filtered_data()
+        <QuerySet [<Person: Person object (1)>, <Person: Person object (3)>, <Person: Person object (5)>]>
+        >>>
+
+        another way is to override default queryset so that wehn you call all() it give u customed filtered data,
+        
+         
+
+

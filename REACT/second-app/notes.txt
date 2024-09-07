@@ -1,0 +1,51 @@
+Native ESM and HMR : 
+
+    Native ESM (ECMAScript Modules)
+
+        Native ESM refers to the standard JavaScript module system introduced in ECMAScript 2015 (ES6). It allows you to organize your code into reusable modules, which can be imported or exported across different files in your project. This is a feature built directly into the JavaScript language and supported by modern browsers and Node.js.
+
+        Example:
+
+        Imagine you have a file named mathFunctions.js where you've written a function to add two numbers:
+
+        javascript
+
+        // In mathFunctions.js
+        export function add(a, b) {
+        return a + b;
+        }
+
+        You can then use this function in another file by importing it:
+
+        javascript
+
+        // In calculator.js
+        import { add } from './mathFunctions.js';
+
+        console.log(add(2, 3)); // Outputs: 5
+
+        Here, mathFunctions.js is a module, and you're using native ESM syntax to export the add function from it and import that function into calculator.js.
+    
+    HMR (Hot Module Replacement)
+
+        HMR is a development feature provided by some JavaScript build tools (like Webpack). It allows developers to replace, add, or remove modules in a running application without needing to refresh the entire page. This makes development faster and more convenient because it maintains the application state, which is particularly useful in web development.
+
+        Example:
+
+        Imagine you're working on a web page that displays a list of usernames fetched from a server. While developing, you decide to change the color of the usernames from black to blue.
+
+            Without HMR: You make the change, save the file, and the browser reloads the entire page. This means it may also re-fetch the usernames from the server, and you'll lose any specific state that was not saved (like if you had a text input partially filled out).
+
+            With HMR: You make the color change in your CSS/JS, save the file, and HMR updates the styles in the live page automatically without a full reload. Your text input remains untouched, and there's no need to re-fetch the usernames. The change appears instantly, and the state of the page is preserved.
+
+        Key Differences:
+
+            Native ESM is about how JavaScript code is organized and shared between different files in a project, using the import and export syntax. It's a standard part of the JavaScript language.
+            HMR is a development tool feature that makes it easier to see changes in real-time without full page reloads, preserving the state of the application during development. It's not part of JavaScript itself but is provided by development tools like Webpack.
+
+        In simple terms, ESM helps you keep your code neat and modular, while HMR keeps your development process smooth and efficient by updating the page on the fly as you work.
+
+
+
+REDUX STORE (with context and reducers): See example from chat gpt history and see example from GWL frontend.
+
